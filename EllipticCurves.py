@@ -86,7 +86,6 @@ class CurvePoint:
         self.x = x
         self.y = y
         self.infinity = infinity
-        self.p = p
         
     def __add__(self, other):
         #

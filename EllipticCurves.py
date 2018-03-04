@@ -86,46 +86,48 @@ class CurvePoint:
         self.x = x
         self.y = y
         self.infinity = infinity
+        self.p = p
         
+    def __add__(self, other):
+        #
+        # Capture trivial cases - one of the points is infinity
+        #
+        if self.infinity:
+            return other
+        if other.infinity:
+            return self
+        #
+        # First check whether we are adding or doubling
+        #
+        x1 = self.x
+        x2 = other.x
+        y1 = self.y
+        y2 = other.y
+        infinity = False
+        if (x1 - x2) % p == 0:
+            #
+            # Are we talking about doubling or addition 
+            # of the inverse?
+            # 
+            if (y1 + y2) % p == 0:
+                infinity = True
+                x3 = 0
+                y3 = 0
+            else:
+                inv = inv_mod_p(2*y1, p)
+                x3 = (inv*(3*x1**2 + a))**2 - 2*x1
+                y3 = (inv*(3*x1**2 + a))*(x1 - x3) - y1
+        else:
+            #
+            # Standard case
+            #
+            inv = inv_mod_p(x2 - x1, p)
+            x3 = ((y2 - y1)*inv)**2 - x1 - x2
+            y3 = (y2 - y1)*inv*(x1 - x3) - y1
+        
+        return CurvePoint(x3 % p, y3 % p, infinity)
         
 
-#
-# Add two points on an elliptic curve
-#
-def add_on_curve(point1, point2,  p, a):
-    #
-    # Capture trivial cases - one of the points is infinity
-    #
-    if point1.infinity:
-        return point2
-    if point2.infinity:
-        return point1
-    #
-    # First check whether we are adding or doubling
-    #
-    x1 = point1.x
-    x2 = point2.x
-    y1 = point1.y
-    y2 = point2.y
-    infinity = False
-    if (x1 - x2) % p == 0:
-        #
-        # Are we talking about doubling or addition of the inverse
-        # 
-        if (y1 + y2) % p == 0:
-            infinity = True
-            x3 = 0
-            y3 = 0
-        else:
-            inv = inv_mod_p(2*y1, p)
-            x3 = (inv*(3*x1**2 + a))**2 - 2*x1
-            y3 = (inv*(3*x1**2 + a))*(x1 - x3) - y1
-    elif y1 != 0:
-        inv = inv_mod_p(x2 - x1, p)
-        x3 = ((y2 - y1)*inv)**2 - x1 - x2
-        y3 = (y2 - y1)*inv*(x1 - x3) - y1
-    
-    return CurvePoint(x3 % p, y3 % p, infinity)
 
 
 #################################################
@@ -148,23 +150,23 @@ b = 20
 A = CurvePoint(5,22)
 B = CurvePoint(16, 27)
 O = CurvePoint(0,0,infinity=True)
-C = add_on_curve(A, B, p, a)
+C = A + B
 assert(C.x == 13)
 assert(C.y == 6)
 assert(C.infinity == False)
-C = add_on_curve(A, A, p, a)
+C = A + A
 assert(C.x == 14)
 assert(C.y == 6)
 assert(C.infinity == False)
 A = CurvePoint(17,19)
 B = CurvePoint(17,10)
-C = add_on_curve(A, B, p, a)
+C = A + B
 assert(C.infinity == True)
-A = add_on_curve(B, O, p, a)
+A = B + O
 assert(A.x == B.x)
 assert(A.y == B.y)
 assert(A.infinity == B.infinity)
-A = add_on_curve(O, B , p, a)
+A = O + B
 assert(A.x == B.x)
 assert(A.y == B.y)
 assert(A.infinity == B.infinity)
@@ -172,9 +174,13 @@ assert(A.infinity == B.infinity)
 
 
 #
-# Now try the same thing with the ECDSA library
+# Create a curve with parameters p,a and b
+# with the ECDSA library
 #
 curve = ecdsa.ellipticcurve.CurveFp(p,a,b)
+#
+# Define two points and add them
+#
 A = ecdsa.ellipticcurve.Point(curve, 5, 22)
 B = ecdsa.ellipticcurve.Point(curve, 16, 27)
 C = A + B
@@ -182,6 +188,10 @@ assert(C.x() == 13)
 assert(C.y() == 6)
 assert(C != ecdsa.ellipticcurve.INFINITY)
 
+
+#
+# Two more points
+#
 A = ecdsa.ellipticcurve.Point(curve, 17, 19)
 B = ecdsa.ellipticcurve.Point(curve, 17, 10)
 C = A + B
@@ -198,8 +208,8 @@ p = curve.curve.p()
 a = curve.curve.a()
 b = curve.curve.b()
 n = G.order()
-print("Bitlength of p: ", p.bit_length())
-print("Bitlength of n: ", n.bit_length())
+print("p = ", p)
+print("n = ", n)
 
 #
 # Determine a private key and a public key
@@ -225,12 +235,12 @@ s = signature.s
 # Calculate this manually
 #
 _r = (k*G).x() % n
-w = inv_mod_p(k, n)
-assert(1 == (k*w % n))
-_s = ((h+d*r)*w) % n
-
 assert(_r == r)
+
+w = inv_mod_p(k, n)
+_s = ((h+d*r)*w) % n
 assert(_s == s)
+
 #
 # Now we manually verify the signature
 #

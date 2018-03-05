@@ -1,2 +1,4 @@
 # bitcoin
-Collection of python code snippets around working with the bitcoin blockchain
+This is a collection of python code and modules to work with the bitcoin protocol. 
+
+Please note that this code is published for educational purposes only and under the MIT license. I strongly discourage the use of this code in any production system! 

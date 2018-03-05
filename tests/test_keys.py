@@ -51,4 +51,6 @@ def test_tc6():
     wif = "cVDUgUEahS1swavidSk1zdSHQpCy1Ac9XSQHkaxmZKcTTfEA5vTY"
     d = btc.keys.wif_to_payload(wif)
     assert(d == 103028256105408389446438916672504271192164767440296751065327418112299269382535)
+    hex_compressed = "02e054ae47f44530f83edb73fe6c5b76b42f3ffab24e2cc12cdc4a77126831324e"
+    assert("mx5zVKcjohqsu4G8KJ83esVxN52XiMvGTY" == btc.keys.ec_address(hex_compressed, version=239))
     

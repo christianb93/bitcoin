@@ -43,3 +43,12 @@ def test_tc6():
 def test_tc7():
     s = "3045022011f9373730c3eb9785e9c31e3e32611b50b33e9eb7c7a92f94162523bb3fbeef0221009b1ec63d55353d536c45bd5e77b223fd47a31da8b25a074e043fa650027f77f001"
     assert(True == btc.utils.isValidDERSignature(s))
+    
+def test_tc8():
+    b = bytes([])
+    assert(btc.utils.base58_encode(b) == "")
+    
+    
+def test_tc9():
+    s = ""
+    assert(btc.utils.base58_decode(s) == bytes([]))

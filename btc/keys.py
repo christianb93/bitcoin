@@ -286,7 +286,7 @@ def ec_address(hex_key, version):
 #
 def ec_address_to_pkh(address):
     #
-    # First decode and strip of the checksum
+    # First decode and strip off the checksum
     #
     decoded = utils.base58_decode(address)
     checksum = decoded[-4:]

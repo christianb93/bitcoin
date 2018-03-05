@@ -56,7 +56,7 @@ b = btc.utils.base58_decode(wif)
 h = binascii.hexlify(b).decode('ascii')
 print("Hex:       ", h)
 #
-# Strip of checksum
+# Strip off checksum
 #
 chk = h[-8:]
 print("Checksum:  ", chk)

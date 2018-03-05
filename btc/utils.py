@@ -102,7 +102,7 @@ def base58_encode(s):
 #
 def base58_decode(s):
     #
-    # Strip of leading 1's as these represent leading
+    # Strip off leading 1's as these represent leading
     # zeros in the original
     #
     zeros = 0

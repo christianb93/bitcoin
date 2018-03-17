@@ -44,7 +44,7 @@ import hashlib
 # See base58.cpp for details on the encoding
 #
 #
-def wif_to_payload_bytes(wif):
+def wifToPayloadBytes(wif):
     #
     # Decode
     #
@@ -91,8 +91,8 @@ def wif_to_payload_bytes(wif):
 # Convert WIF encoded private key to a number
 # (the actual secret)
 #
-def wif_to_payload(wif):
-    b = wif_to_payload_bytes(wif)
+def wifToPayload(wif):
+    b = wifToPayloadBytes(wif)
     d = int.from_bytes(b, byteorder ="big")
     return d
     
@@ -101,7 +101,7 @@ def wif_to_payload(wif):
 #
 # Convert a private key stored as a number to a WIF
 #
-def payload_value_to_wif(v, version):
+def payloadValueToWif(v, version):
     #
     # First convert the private key to a byte sequence
     # using big endian encoding
@@ -133,7 +133,7 @@ def payload_value_to_wif(v, version):
 # Input: the PEM as byte sequence
 # Outputs: X and Y as byte sequences
 # 
-def public_point_from_pem(pem):
+def publicPointFromPEM(pem):
     #
     # Remove the first and last line and all
     # line breaks to extract the DER encoded part
@@ -217,7 +217,7 @@ def public_point_from_pem(pem):
 # the curve, (65 bytes string), extract
 # the points X and Y as integers
 #
-def ec_point_hex_to_values(point):
+def ecPointHexToValues(point):
     # 
     # Convert to bytes
     #
@@ -237,7 +237,7 @@ def ec_point_hex_to_values(point):
 # Given a point with coordinates (X,Y) as integers,
 # convert to a compressed representation as bytes
 #
-def ec_point_compress(X,Y):
+def ecPointCompress(X,Y):
     _X = X.to_bytes(32, 'big')
     if (Y % 2) == 1:
         _X = b'\x03' + _X
@@ -250,14 +250,14 @@ def ec_point_compress(X,Y):
 # Given a point with coordinates (X,Y) as integers,
 # convert to a compressed representation as hex
 #
-def ec_point_compress_hex(X,Y):
-    return binascii.hexlify(ec_point_compress(X,Y)).decode('ascii')
+def ecPointCompressHex(X,Y):
+    return binascii.hexlify(ecPointCompress(X,Y)).decode('ascii')
     
 #
 # Given a hex representation of a public key,
 # determine the address in base58 check encoding
 #
-def ec_address(hex_key, version):
+def ecAddress(hex_key, version):
     s = bytes.fromhex(hex_key)
     adr = utils.hash160(s)
     #
@@ -284,7 +284,7 @@ def ec_address(hex_key, version):
 # Given a bitcoin address, get a hash160 of the
 # public key 
 #
-def ec_address_to_pkh(address):
+def ecAddressToPKH(address):
     #
     # First decode and strip off the checksum
     #

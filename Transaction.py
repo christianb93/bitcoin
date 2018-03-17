@@ -91,7 +91,7 @@ for i, txin in enumerate(txn.getInputs()):
     print("    Previous transaction ID: ", txin.getPrevTxId())
     print("    Index:                   ", txin.getVout())
     print("    Signature script length: ", 
-        btc.serialize.serialize_varInt(len(txin.getScriptSigHex()) // 2), 
+        btc.serialize.serializeVarInt(len(txin.getScriptSigHex()) // 2), 
         "(", 
         len(txin.getScriptSigHex()) // 2, 
         ")")
@@ -108,7 +108,7 @@ for i, txout in enumerate(txn.getOutputs()):
     amount = txout.getValue()
     print("    Amount:                  ", hex(amount), "(", amount, ")")
     print("    Public key script length:", 
-    btc.serialize.serialize_varInt(len(txout.getScriptPubKeyHex()) // 2), 
+    btc.serialize.serializeVarInt(len(txout.getScriptPubKeyHex()) // 2), 
         "(", 
         len(txout.getScriptPubKeyHex()) // 2, 
         ")")

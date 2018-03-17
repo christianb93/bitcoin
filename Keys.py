@@ -51,7 +51,7 @@ print("WIF:             ", wif)
 #
 # Convert into a sequence of bytes
 #
-b = btc.utils.base58_decode(wif)
+b = btc.utils.base58Decode(wif)
 #
 # and into hex
 #
@@ -120,5 +120,5 @@ chk = hash256(address)[:4]
 #
 # and encode
 #
-address = btc.utils.base58_encode(address + chk)
+address = btc.utils.base58Encode(address + chk)
 print("Address:         ", address)

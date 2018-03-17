@@ -33,6 +33,7 @@
 ###############################################
 
 import hashlib
+import requests
 
 BASE58_ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
 
@@ -196,3 +197,17 @@ def isValidDERSignature(s):
             return False
 
     return True
+    
+    
+#################################################
+#
+# Utility function to get a transaction in raw
+# format from bitcoin.info
+#
+#################################################
+
+def get_raw_transaction(txid):
+    url = 'https://blockchain.info/en/tx/' + txid + '?format=hex'
+    r = requests.get(url)
+    return r.text
+

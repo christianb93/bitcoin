@@ -38,7 +38,7 @@ import binascii
 # Decode a number and return the stream with 
 # the number removed
 #
-def deserialize_number(s, l):
+def deserializeNumber(s, l):
     if len(s) < 2*l:
         raise TypeError("Input string too short")
     i = int.from_bytes(bytes.fromhex(s[0:2*l]), 'little') 
@@ -51,24 +51,24 @@ def deserialize_number(s, l):
 # - the value
 # - the remaining string
 #    
-def deserialize_varInt(s):
+def deserializeVarInt(s):
     #
     # See ReadCompactSize in serialize.h for the logic
     #
     if len(s) < 2:
         raise TypeError("Input string too short")
-    i, s = deserialize_number(s, 1)
+    i, s = deserializeNumber(s, 1)
     if i < 253:
         return i, s
     if i == 253:
         #
         # Read two extra bytes
         #
-        b, s = deserialize_number(s, 2)
+        b, s = deserializeNumber(s, 2)
     elif i == 254:
-        b, s = deserialize_number(s,4)
+        b, s = deserializeNumber(s,4)
     elif i == 255:
-        b, s = deserialize_number(s, 8)
+        b, s = deserializeNumber(s, 8)
     else:
         raise TypeError("Invalid first byte (",i,") for varInt")
     return b, s
@@ -80,8 +80,8 @@ def deserialize_varInt(s):
 # - the value
 # - the remaining string
 #
-def deserialize_char(s):
-    return deserialize_number(s, 1)
+def deserializeChar(s):
+    return deserializeNumber(s, 1)
 
 #
 # Decode a long int
@@ -89,8 +89,8 @@ def deserialize_char(s):
 # - the value
 # - the remaining string
 #
-def deserialize_uint32(s):
-    return deserialize_number(s, 4)
+def deserializeUint32(s):
+    return deserializeNumber(s, 4)
 
 #
 # Decode a long long
@@ -98,8 +98,8 @@ def deserialize_uint32(s):
 # - the value
 # - the remaining string
 #
-def deserialize_uint64(s):
-    return deserialize_number(s, 8)
+def deserializeUint64(s):
+    return deserializeNumber(s, 8)
 
 #
 # Decode a hex string of len bytes
@@ -107,7 +107,7 @@ def deserialize_uint64(s):
 # - the value as a hex string
 # - the remaining string
 #
-def deserialize_string(s, len):
+def deserializeString(s, len):
     r = ""
     for _ in range(len):
         r = s[0:2] + r
@@ -119,7 +119,7 @@ def deserialize_string(s, len):
 #
 # Serialize a number
 #
-def serialize_number(n, l = None, order="little"):
+def serializeNumber(n, l = None, order="little"):
     if l == None:
         l = (n.bit_length() + 7) // 8
     n = n.to_bytes(l, order)
@@ -129,7 +129,7 @@ def serialize_number(n, l = None, order="little"):
 #
 # Encode a hex string of len bytes
 #
-def serialize_string(s, len):
+def serializeString(s, len):
     r = ""
     for _ in range(len):
         r = s[0:2] + r
@@ -139,9 +139,9 @@ def serialize_string(s, len):
 #
 # Serialize a varInt
 #
-def serialize_varInt(x):
+def serializeVarInt(x):
     if x < 253:
-        return serialize_number(x, 1)
+        return serializeNumber(x, 1)
     else:
         if x > (2**16 - 1):
             #
@@ -154,33 +154,33 @@ def serialize_varInt(x):
                 #
                 # No - need all eight bytes
                 #
-                s = "ff" + serialize_number(x,8)    
+                s = "ff" + serializeNumber(x,8)    
             #
             # Can do it with four bytes
             # 
             else:
-                s = "fe" + serialize_number(x,4)
+                s = "fe" + serializeNumber(x,4)
         else:
             # can do it with two bytes
-            s = "fd" + serialize_number(x,2)
+            s = "fd" + serializeNumber(x,2)
         return s
 
 #
 # Encode a char
 #
-def serialize_char(x):
-    return serialize_number(x, 1)
+def serializeChar(x):
+    return serializeNumber(x, 1)
 
 #
 # Encode a long int
 #
-def serialize_uint32(x):
-    return serialize_number(x, 4)
+def serializeUint32(x):
+    return serializeNumber(x, 4)
 
 #
 # Encode a long long
 #
-def serialize_uint64(x):
-    return serialize_number(x, 8)
+def serializeUint64(x):
+    return serializeNumber(x, 8)
 
 

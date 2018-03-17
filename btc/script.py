@@ -97,7 +97,7 @@ class scriptSig:
         
     
     def deserialize(self, s):
-        opcode, s = serialize.deserialize_char(s)
+        opcode, s = serialize.deserializeChar(s)
         if (opcode >= OP_PUSHDATA1):
             self.scriptType = SCRIPTTYPE_OTHER
             return
@@ -119,7 +119,7 @@ class scriptSig:
         # array, excluding the byte that we just read and excluding
         # the hash type
         #
-        l, der_signature = serialize.deserialize_char(der_signature)
+        l, der_signature = serialize.deserializeChar(der_signature)
         #
         # Next byte should be 02 for integer
         #
@@ -130,7 +130,7 @@ class scriptSig:
         #
         # Read length and r (which is a big endian which is DER standard)
         #
-        l, der_signature = serialize.deserialize_char(der_signature)
+        l, der_signature = serialize.deserializeChar(der_signature)
         sign_r = der_signature[0:l*2]
         sign_r_int = int.from_bytes(bytes.fromhex(sign_r), 'big')
         der_signature = der_signature[2*l:]
@@ -141,7 +141,7 @@ class scriptSig:
             self.scriptType = SCRIPTTYPE_OTHER
             return
         der_signature = der_signature[2:]    
-        l, der_signature = serialize.deserialize_char(der_signature)
+        l, der_signature = serialize.deserializeChar(der_signature)
         sign_s = der_signature[0:2*l]
         sign_s_int = int.from_bytes(bytes.fromhex(sign_s), 'big')
         der_signature = der_signature[2*l:]
@@ -162,7 +162,7 @@ class scriptSig:
             #
             # Now the remaining part should start with an opcode again
             # 
-            opcode, s = serialize.deserialize_char(s)
+            opcode, s = serialize.deserializeChar(s)
             if (opcode >= 0x4c):
                 self.scriptType = SCRIPTTYPE_OTHER
                 return    
@@ -190,8 +190,8 @@ class scriptSig:
         # R and S are both represented by 02 - the DER code for an integer -
         # followed by their values in big endian encoding
         #
-        r_str = serialize.serialize_number(self.r, order="big")
-        s_str = serialize.serialize_number(self.s, order="big")
+        r_str = serialize.serializeNumber(self.r, order="big")
+        s_str = serialize.serializeNumber(self.s, order="big")
         #
         # DER requires that the first byte has its highest bit not set, as otherwise
         # this would be interpreted as an integer. So if this is the case, we would 
@@ -203,22 +203,21 @@ class scriptSig:
             r_str = "00" + r_str
         if s_first & 0x80:  
             s_str = "00" + s_str            
-        scriptSig = "02" + serialize.serialize_char(int(len(r_str) / 2)) + r_str
-        scriptSig = scriptSig + "02" + serialize.serialize_char(int(len(s_str) / 2)) + s_str
+        scriptSig = "02" + serialize.serializeChar(int(len(r_str) / 2)) + r_str
+        scriptSig = scriptSig + "02" + serialize.serializeChar(int(len(s_str) / 2)) + s_str
         #
         # Now add length and 0x30 - the DER type code for a sequence. We have not yet added
         # the hashtype, so the length we need to decode is the current length in bytes
         #
-        scriptSig = "30" + serialize.serialize_char(int(len(scriptSig) / 2)) + scriptSig
+        scriptSig = "30" + serialize.serializeChar(int(len(scriptSig) / 2)) + scriptSig
         #
         # Add hashtype
         #
-        scriptSig = scriptSig + serialize.serialize_char(self.hashType)
-        assert(utils.isValidDERSignature(scriptSig))
+        scriptSig = scriptSig + serialize.serializeChar(self.hashType)
         #
         # finally add opcode for push data which is simply the length
         #
-        scriptSig = serialize.serialize_char(int(len(scriptSig) / 2)) + scriptSig
+        scriptSig = serialize.serializeChar(int(len(scriptSig) / 2)) + scriptSig
         #
         # Now we are done with the first push operation. If this is a P2PK 
         # script we are done
@@ -228,7 +227,7 @@ class scriptSig:
         #
         # Otherwise we need to push the pub key
         # 
-        scriptSig = scriptSig + serialize.serialize_char(int(len(self.pubKeyHex) / 2))
+        scriptSig = scriptSig + serialize.serializeChar(int(len(self.pubKeyHex) / 2))
         scriptSig = scriptSig + self.pubKeyHex
         return scriptSig
             
@@ -281,7 +280,7 @@ class scriptPubKey():
         
     
     def deserialize(self,s):
-        opcode, s = serialize.deserialize_char(s)
+        opcode, s = serialize.deserializeChar(s)
         if opcode == 33:
             #
             # Could be a P2PK script
@@ -291,7 +290,7 @@ class scriptPubKey():
             #
             # the next opcode should then be OP_CHECKSIG
             # 
-            opcode, s = serialize.deserialize_char(s)
+            opcode, s = serialize.deserializeChar(s)
             if opcode != OP_CHECKSIG:
                 self.scriptType = SCRIPTTYPE_OTHER
                 return
@@ -307,7 +306,7 @@ class scriptPubKey():
         #
         # Now we expect OP_HASH160
         # 
-        opcode, s = serialize.deserialize_char(s)
+        opcode, s = serialize.deserializeChar(s)
         if opcode != OP_HASH160:
             self.scriptType = SCRIPTTYPE_OTHER
             return
@@ -315,7 +314,7 @@ class scriptPubKey():
         # Next we should push the pubkey hash on the stack,
         # which has 20 bytes
         # 
-        opcode, s = serialize.deserialize_char(s)
+        opcode, s = serialize.deserializeChar(s)
         if opcode != 20:
             self.scriptType = SCRIPTTYPE_OTHER
             return
@@ -324,14 +323,14 @@ class scriptPubKey():
         #
         # Now there should be OP_EQUALVERIFY
         #
-        opcode, s = serialize.deserialize_char(s)
+        opcode, s = serialize.deserializeChar(s)
         if opcode != OP_EQUALVERIFY:
             self.scriptType = SCRIPTTYPE_OTHER
             return
         #
         # and OP_CHECKSIG
         #
-        opcode, s = serialize.deserialize_char(s)
+        opcode, s = serialize.deserializeChar(s)
         if opcode != OP_CHECKSIG:
             self.scriptType = SCRIPTTYPE_OTHER
             return
@@ -352,32 +351,32 @@ class scriptPubKey():
         # the public key
         #
         if self.scriptType == SCRIPTTYPE_P2PK:
-            s = serialize.serialize_char(33)
+            s = serialize.serializeChar(33)
             s = s + self.pubKeyHex
         else:
             
             #
             # P2KH. First op is OP_DUP
             #
-            s = serialize.serialize_char(script.OP_DUP)
+            s = serialize.serializeChar(script.OP_DUP)
             #
             # Now we need OP_HASH160
             # 
-            s = s + serialize.serialize_char(script.OP_HASH160)
+            s = s + serialize.serializeChar(script.OP_HASH160)
             #
             # Next we should push the pubkey hash on the stack,
             # which has 20 bytes
             # 
-            s = s + serialize.serialize_char(20)
+            s = s + serialize.serializeChar(20)
             s = s + self.pubKeyHash
             #
             # Now there should be OP_EQUALVERIFY
             #
-            s = s + serialize.serialize_char(script.OP_EQUALVERIFY)
+            s = s + serialize.serializeChar(script.OP_EQUALVERIFY)
         #
         # Finally there is OP_CHECKSIG
         #
-        s = s + serialize.serialize_char(script.OP_CHECKSIG)
+        s = s + serialize.serializeChar(script.OP_CHECKSIG)
         return s
     
     
@@ -404,11 +403,11 @@ def serializeForSigning(tx, nInput, scriptPubKey):
     #
     # Version
     #
-    s = serialize.serialize_uint32(tx.getVersion())
+    s = serialize.serializeUint32(tx.getVersion())
     #
     # Number of input transactions
     #
-    s = s + serialize.serialize_varInt(len(tx.getInputs()))
+    s = s + serialize.serializeVarInt(len(tx.getInputs()))
     #
     # Each indivual input transactions
     #
@@ -419,17 +418,17 @@ def serializeForSigning(tx, nInput, scriptPubKey):
     #
     # Now do the outputs
     #
-    s = s + serialize.serialize_varInt(len(tx.getOutputs()))
+    s = s + serialize.serializeVarInt(len(tx.getOutputs()))
     for txout in tx.getOutputs():
         s = s + txout.serialize()
     #
     # and the locktime
     #
-    s = s + serialize.serialize_uint32(tx.getLocktime())
+    s = s + serialize.serializeUint32(tx.getLocktime())
     #
     # plus SIGHASH_ALL
     #
-    s = s + serialize.serialize_uint32(SIGHASHTYPE_ALL)    
+    s = s + serialize.serializeUint32(SIGHASHTYPE_ALL)    
     return s
     
     
@@ -439,12 +438,12 @@ def serializeTxinForSigning(txin, nInput, index, scriptPubKey):
     # Previous transaction id
     #
     prev_txid = txin.getPrevTxId()
-    s = s + serialize.serialize_string(prev_txid, 32)
+    s = s + serialize.serializeString(prev_txid, 32)
     #
     # and its index
     #
     vout = txin.getVout()
-    s = s + serialize.serialize_uint32(vout)
+    s = s + serialize.serializeUint32(vout)
     #
     # Now we use serialized pubKeyScript
     # of the corresponding output if nInput = index and
@@ -454,11 +453,11 @@ def serializeTxinForSigning(txin, nInput, index, scriptPubKey):
         scriptPubKeyHex = scriptPubKey.serialize()
     else:
         scriptPubKeyHex = ""
-    s = s + serialize.serialize_char(int(len(scriptPubKeyHex) / 2)) + scriptPubKeyHex
+    s = s + serialize.serializeChar(int(len(scriptPubKeyHex) / 2)) + scriptPubKeyHex
     #
     # finally the sequence
     #
-    s = s + serialize.serialize_uint32(txin.getSequence())
+    s = s + serialize.serializeUint32(txin.getSequence())
     return s
 
 #

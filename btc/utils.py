@@ -71,7 +71,7 @@ def hash256(s):
 #
 # see base58.cpp 
 #
-def base58_encode(s):
+def base58Encode(s):
     assert(isinstance(s, bytes))
     #
     # Count the number of leading zeros
@@ -101,7 +101,7 @@ def base58_encode(s):
 # Decode a Base58 encoded string and return a
 # sequence of bytes
 #
-def base58_decode(s):
+def base58Decode(s):
     #
     # Strip off leading 1's as these represent leading
     # zeros in the original
@@ -206,7 +206,7 @@ def isValidDERSignature(s):
 #
 #################################################
 
-def get_raw_transaction(txid):
+def getRawTransaction(txid):
     url = 'https://blockchain.info/en/tx/' + txid + '?format=hex'
     r = requests.get(url)
     return r.text

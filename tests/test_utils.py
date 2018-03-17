@@ -10,22 +10,22 @@ import binascii
     
 def test_tc1():
     b = binascii.unhexlify("6f250ed017660abdd723ed28a427fda68a6eb0a3f8a46cfc54")
-    s = btc.utils.base58_encode(b)
+    s = btc.utils.base58Encode(b)
     assert( s == "mitu3NFAd83mPQnVVu6k1yd47VWLJ9JATd")
-    assert(b == btc.utils.base58_decode(s))
+    assert(b == btc.utils.base58Decode(s))
     assert( s == "mitu3NFAd83mPQnVVu6k1yd47VWLJ9JATd")
     pass
     
 def test_tc2():
     b = bytes([0])
-    assert(btc.utils.base58_encode(b) == "1")
+    assert(btc.utils.base58Encode(b) == "1")
         
 def test_tc3():
     b = b'\0\0'
-    assert(btc.utils.base58_encode(b) == "11")
+    assert(btc.utils.base58Encode(b) == "11")
         
 def test_tc4():
-    assert(bytes([0,0]) == btc.utils.base58_decode("11"))
+    assert(bytes([0,0]) == btc.utils.base58Decode("11"))
         
 def test_tc5():
     x = bytes.fromhex("12acfe")
@@ -46,9 +46,9 @@ def test_tc7():
     
 def test_tc8():
     b = bytes([])
-    assert(btc.utils.base58_encode(b) == "")
+    assert(btc.utils.base58Encode(b) == "")
     
     
 def test_tc9():
     s = ""
-    assert(btc.utils.base58_decode(s) == bytes([]))
+    assert(btc.utils.base58Decode(s) == bytes([]))

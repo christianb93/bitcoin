@@ -100,20 +100,20 @@ class txin:
         # Read the previous transaction ID first. The transaction
         # ID is a 32 byte hex string
         #
-        self.prevTxid, s = serialize.deserialize_string(s, 32)
+        self.prevTxid, s = serialize.deserializeString(s, 32)
         #
         #
         # Next there is the index of the txout in the
         # previous transaction that we refer to
         #  
-        self.vout, s = serialize.deserialize_uint32(s)   
+        self.vout, s = serialize.deserializeUint32(s)   
         #
         #
         # Then there is the signature script, first
         # the length in bytes, then the hex representation
         # of the script itself
         #
-        script_len, s = serialize.deserialize_varInt(s)
+        script_len, s = serialize.deserializeVarInt(s)
         self.scriptSigHex = s[0:2*script_len]
         self.scriptSig = script.scriptSig()
         self.scriptSig.deserialize(self.scriptSigHex)
@@ -121,7 +121,7 @@ class txin:
         #
         # finally the sequence field
         #
-        self.sequence, s = serialize.deserialize_uint32(s)
+        self.sequence, s = serialize.deserializeUint32(s)
         return s
         
         
@@ -148,11 +148,11 @@ class txin:
         #
         #  Previous transaction id
         #
-        s = s + serialize.serialize_string(self.prevTxid, 32)
+        s = s + serialize.serializeString(self.prevTxid, 32)
         #
         # and its index
         # 
-        s = s + serialize.serialize_uint32(self.vout)
+        s = s + serialize.serializeUint32(self.vout)
         #
         #  
         # Then there is the signature script, first
@@ -166,12 +166,12 @@ class txin:
             scriptSigHex = self.scriptSigHex
         else:
             raise ValueError("Do not have hex representation of the signature script")
-        s = s + serialize.serialize_varInt(int(len(scriptSigHex) / 2))
+        s = s + serialize.serializeVarInt(int(len(scriptSigHex) / 2))
         s = s + scriptSigHex
         #
         # Finally the locktime
         #
-        s = s + serialize.serialize_uint32(self.sequence)
+        s = s + serialize.serializeUint32(self.sequence)
         return s
 
 
@@ -203,12 +203,12 @@ class txout:
         # 
         # First eight bytes are the value in Satoshi
         # 
-        self.value, s = serialize.deserialize_uint64(s)
+        self.value, s = serialize.deserializeUint64(s)
         #
         # Then there is the public key script - length
         # and hex representation
         #
-        script_len, s = serialize.deserialize_varInt(s)
+        script_len, s = serialize.deserializeVarInt(s)
         self.scriptPubKeyHex = s[0:2*script_len]
         self.scriptPubKey = script.scriptPubKey()
         self.scriptPubKey.deserialize(self.scriptPubKeyHex)
@@ -246,7 +246,7 @@ class txout:
         #
         if self.value == None:
             return ""
-        s = serialize.serialize_uint64(self.value)
+        s = serialize.serializeUint64(self.value)
         #
         # Next there is the scriptPubKey, preceeded by its length
         #   
@@ -258,7 +258,7 @@ class txout:
             scriptPubKeyHex = self.scriptPubKeyHex
         else:
             raise ValueError("Could not determine hex representation of script")
-        s = s + serialize.serialize_varInt(int(len(scriptPubKeyHex) / 2))
+        s = s + serialize.serializeVarInt(int(len(scriptPubKeyHex) / 2))
         s = s + scriptPubKeyHex
         return s
     
@@ -307,7 +307,7 @@ class txn:
         #
         # The first four bytes are the version number
         #
-        version, vin_str = serialize.deserialize_uint32(s)
+        version, vin_str = serialize.deserializeUint32(s)
         if ((version != 1) and (version != 2)):
             raise ValueError("Unknown version number")
         self.version = version
@@ -316,7 +316,7 @@ class txn:
         # by the input transactions themselves
         #
         self.inputs =  []
-        no_in, vin_str = serialize.deserialize_varInt(vin_str)
+        no_in, vin_str = serialize.deserializeVarInt(vin_str)
         for i in range(no_in):
             vin = txin()
             vin_str = vin.deserialize(vin_str)
@@ -324,7 +324,7 @@ class txn:
         #
         # do the same for the outgoing transactions
         #
-        no_out, vout_str = serialize.deserialize_varInt(vin_str)    
+        no_out, vout_str = serialize.deserializeVarInt(vin_str)    
             
         self.outputs = []
         for i in range(no_out):
@@ -335,21 +335,21 @@ class txn:
         #
         # Last field is the locktime
         #
-        self.locktime, vout_str = serialize.deserialize_uint32(vout_str)
+        self.locktime, vout_str = serialize.deserializeUint32(vout_str)
         
         
     #
     # Serialize the transaction
     #
     def serialize(self):
-        s = serialize.serialize_uint32(self.version)
-        s = s + serialize.serialize_varInt(len(self.inputs))
+        s = serialize.serializeUint32(self.version)
+        s = s + serialize.serializeVarInt(len(self.inputs))
         for txin in self.inputs:
             s = s + txin.serialize()
-        s = s + serialize.serialize_varInt(len(self.outputs))
+        s = s + serialize.serializeVarInt(len(self.outputs))
         for txout in self.outputs:
             s = s + txout.serialize()
-        s = s + serialize.serialize_uint32(self.locktime)
+        s = s + serialize.serializeUint32(self.locktime)
         return s
         
     #

@@ -48,8 +48,8 @@ def wif_to_payload_bytes(wif):
     #
     # Decode
     #
-    decoded = utils.base58_decode(wif)
-    assert(utils.base58_encode(decoded) == wif)
+    decoded = utils.base58Decode(wif)
+    assert(utils.base58Encode(decoded) == wif)
     #
     # The last four bytes are the checksum
     #
@@ -123,7 +123,7 @@ def payload_value_to_wif(v, version):
     # and append them
     #
     s = s + chk
-    return utils.base58_encode(s)
+    return utils.base58Encode(s)
 
 #
 # Extract the public points (x,y) from a
@@ -278,7 +278,7 @@ def ec_address(hex_key, version):
     # 
     chk = utils.hash256(adr)[:4]
     adr = adr + chk
-    return utils.base58_encode(adr)
+    return utils.base58Encode(adr)
 
 #
 # Given a bitcoin address, get a hash160 of the
@@ -288,7 +288,7 @@ def ec_address_to_pkh(address):
     #
     # First decode and strip off the checksum
     #
-    decoded = utils.base58_decode(address)
+    decoded = utils.base58Decode(address)
     checksum = decoded[-4:]
     msg = decoded[:-4]
     #

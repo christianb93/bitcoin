@@ -409,7 +409,7 @@ def serializeForSigning(tx, nInput, scriptPubKey):
     #
     s = s + serialize.serializeVarInt(len(tx.getInputs()))
     #
-    # Each indivual input transactions
+    # Each individual input transaction
     #
     i = 0
     for txin in tx.getInputs():
@@ -498,8 +498,7 @@ def verifySignature(tx, nInput, spentOutput):
     # standards, for instance SEC1, section 2.3.7, a hash string is converted to 
     # a number using big endian encoding)
     #
-    h = signatureHash(tx, nInput, spentOutput)
-    h = int.from_bytes(h, "big")
+    h = int.from_bytes(signatureHash(tx, nInput, spentOutput), "big")
     #
     # Get signature
     #
@@ -522,8 +521,7 @@ def verifySignature(tx, nInput, spentOutput):
         # use previous output and extract from there
         #
         pubKey = spentOutput.getScriptPubKey().getPubKeyHex()
-    _x = pubKey[2:66]
-    x = int.from_bytes(bytes.fromhex(_x), 'big')
+    x = int.from_bytes(bytes.fromhex(pubKey[2:66]), 'big')
     y = ecdsa.numbertheory.square_root_mod_prime((x**3 +7) % p , p)
     if pubKey[0:2] == "02":
         #

@@ -254,5 +254,4 @@ def test_tc44():
     assert(prevTransaction.getTxnId() == txin.getPrevTxId())
     spentTxout = prevTransaction.getOutputs()[txin.getVout()]
     stringToHash = btc.script.serializeForSigning(spendingTransaction, 0, spentTxout.getScriptPubKey())
-    print("stringTohash = ", stringToHash)
     assert(True == btc.script.verifySignature(spendingTransaction, 0, spentTxout))

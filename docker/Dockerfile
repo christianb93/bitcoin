@@ -47,6 +47,7 @@ FROM alpine:3.7
 # Copy the binaries from the build to our new container
 #
 COPY --from=build /usr/local/bin/bitcoind /usr/local/bin
+COPY --from=build /usr/local/bin/bitcoin-cli /usr/local/bin
 
 #
 # Install all dependencies

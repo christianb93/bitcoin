@@ -1,0 +1,8 @@
+FROM alpine-dev
+
+#
+# Clone the defined branch from the github repository to 
+# get the sourcecode
+#
+RUN git clone https://github.com/bitcoin/bitcoin --branch v0.15.0 --single-branch
+

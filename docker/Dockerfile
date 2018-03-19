@@ -1,4 +1,4 @@
-FROM alpine as build
+FROM alpine:3.7 as build
 
 #
 # First get all the packages for 
@@ -41,7 +41,7 @@ RUN (cd bitcoin  && ./autogen.sh && \
                       make install )
 
 
-FROM alpine
+FROM alpine:3.7
 
 #
 # Copy the binaries from the build to our new container

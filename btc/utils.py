@@ -211,3 +211,39 @@ def getRawTransaction(txid):
     r = requests.get(url)
     return r.text
 
+#################################################
+#
+# Utility function to submit an RPC method call
+# to a bitcoin server
+#
+#################################################
+
+def rpcCall(method, params = None, port=18332, host="localhost", user="user", password="password"):
+    #
+    # Create request header
+    #
+    headers = {'content-type': 'application/json'}
+    #
+    # Build URL from host and port information
+    #
+    url = "http://" + host + ":" + str(port)
+    #
+    # Assemble payload as a Python dictionary
+    # 
+    payload = {"method": method, "params": params, "jsonrpc": "2.0", "id": 1}        
+    #
+    # Create and send POST request
+    #
+    r = requests.post(url, json=payload, headers=headers, auth=(user, password))
+    #
+    # and interpret result
+    #
+    json = r.json()
+    if 'result' in json and json['result'] != None:
+        return json['result']
+    elif 'error' in json:
+        raise ConnectionError("Request failed with RPC error", json['error'])
+    else:
+        raise ConnectionError("Request failed with HTTP status code ", r.status_code)
+        
+

@@ -35,9 +35,11 @@ from . import serialize
 from . import script
 from . import txn
 from . import utils
+from . import keys
 
 import binascii
 import ecdsa
+import random
 
 
 OP_PUSHDATA1 = 0x4c
@@ -541,4 +543,74 @@ def verifySignature(tx, nInput, spentOutput):
     signature = ecdsa.ecdsa.Signature(r,s)
     return pKey.verifies(h, signature)
 
-    
+#
+# Sign a transaction. Given the transaction txn,
+# a list of unspent transaction outputs txos and
+# a list of corresponding private keys, this function
+# will sign the transaction inputs of txn and add the
+# corresponding signature script to the transaction 
+# which is then returned.
+#
+def signTransaction(txn, txos, privateKeys):
+    #
+    # Get standard curve and generator
+    #
+    curve = ecdsa.curves.SECP256k1
+    G = curve.generator
+    p = curve.curve.p()
+    n = G.order()
+    #
+    # Now go through all the inputs and sign them
+    #
+    nInput = 0
+    for txin in txn.getInputs():
+        #
+        # Get the hash that we will sign
+        #
+        spentOutput = txos[nInput]
+        h = int.from_bytes(script.signatureHash(txn, nInput, spentOutput), "big")
+        #
+        # Get the matching private key - we need a hex representation
+        #
+        secret = privateKeys[nInput]
+        pubkey = ecdsa.ecdsa.Public_key(G, G * secret)
+        pubKeyHex = keys.ecPointCompressHex(pubkey.point.x(), pubkey.point.y())
+        # 
+        # Sign using the ECDSA library 
+        #
+        privkey = ecdsa.ecdsa.Private_key(pubkey, secret)
+        signature = privkey.sign(h, random.SystemRandom().randrange( 1, n ))
+        #
+        # Bitcoin expects that the s value is at most half of the order n,
+        # see interpreter.cpp/IsLowDERSignature
+        #
+        if signature.s > n // 2:
+            signature.s = n - signature.s
+        #
+        # Now create the scriptSig. We need to match its type according
+        # to the type of the output
+        #
+        outputScriptType = spentOutput.getScriptPubKey().getScriptType()
+        if outputScriptType == script.SCRIPTTYPE_P2PKH:
+            scriptSig = script.scriptSig(scriptType = script.SCRIPTTYPE_P2PKH,
+                                     r = signature.r,
+                                     s = signature.s,
+                                     pubKeyHex = pubKeyHex,
+                                     hashType = 1)
+        elif outputScriptType == script.SCRIPTTYPE_P2PK:
+            scriptSig = script.scriptSig(scriptType = script.SCRIPTTYPE_P2PK,
+                                     r = signature.r,
+                                     s = signature.s,
+                                     pubKeyHex = None,
+                                     hashType = 1)
+        else:
+            raise ValueError("Cannot sign this type of script")
+        #
+        # Finally plug this scriptSig into the input
+        #
+        txin.scriptSig = scriptSig
+        txin.scriptSigHex = scriptSig.serialize()
+        nInput += 1
+        
+    return txn
+

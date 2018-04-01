@@ -37,6 +37,9 @@ from . import utils
 from . import txn
 import binascii
 
+#
+# A bitcoin block header
+#
 class blockHeader:
     
     def __init__(self, version = 0x20000000, prevBlockId = None, merkleRoot = None, creationTime = 0, bits = 0, nonce=0):
@@ -75,10 +78,17 @@ class blockHeader:
     # creation time in seconds since the epoch
     # bits - encoding the difficulty
     # nonce
+    #
+    # Thus in total, a block header has 80 bytes
     # see primitives/block.h
     #
     def deserialize(self,raw):
         self.version, raw = serialize.deserializeUint32(raw)
+        #
+        # We use our deserialization method, so we obtain a 
+        # representation of the previous block ID as a 
+        # big endian number
+        #
         self.prevBlockId, raw = serialize.deserializeString(raw, 32)
         self.merkleRoot, raw = serialize.deserializeString(raw, 32)
         self.creationTime, raw = serialize.deserializeUint32(raw)
@@ -86,6 +96,82 @@ class blockHeader:
         self.nonce, raw = serialize.deserializeUint32(raw)
         return raw
         
+        
+    #
+    # Serialize a block header
+    #
+    def serialize(self):
+        s = serialize.serializeUint32(self.version)
+        s += serialize.serializeString(self.prevBlockId, 32)
+        s += serialize.serializeString(self.merkleRoot, 32)
+        s += serialize.serializeUint32(self.creationTime)
+        s += serialize.serializeUint32(self.bits)
+        s += serialize.serializeUint32(self.nonce)
+        return s
+        
+
+#
+# A bitcoin block
+# See primitives/block.h in the reference implementation
+# A block is a block header along with the underlying transactions
+#
+class block:
+        
+    def __init__(self,blockHeader = None, tx = None):
+        self.blockHeader = blockHeader
+        self.tx = tx
+        
+        
+    def getBlockHeader(self):
+        return self.blockHeader
+        
+    def getTx(self):
+        return self.tx
+        
+    #
+    # Deserialize a block 
+    #    
+    def deserialize(self, raw):
+        #
+        # First do the block header
+        # 
+        self.blockHeader = blockHeader()
+        raw = self.blockHeader.deserialize(raw)
+        #
+        # the next field is the number of 
+        # transactions in the block - at least one
+        #
+        noTx, raw = serialize.deserializeVarInt(raw)
+        if noTx < 1:
+            raise ValueError("Block needs to have at least one transaction")
+        self.tx = []
+        #
+        # Deserialize the individual blocks
+        #
+        for i in range(noTx):
+            _tx = txn.txn()
+            raw = _tx.deserialize(raw)
+            self.tx.append(_tx)
+            
     
-    
-    
+    #
+    # Serialize a block 
+    #    
+    def serialize(self):
+        #
+        # First do the block header
+        # 
+        s = self.blockHeader.serialize()
+        #
+        # the next field is the number of 
+        # transactions in the block - at least one
+        #
+        s += serialize.serializeVarInt(len(self.tx))
+        #
+        # Serialize the individual blocks
+        #
+        for _tx in self.tx:
+            s += _tx.serialize()
+        return s    
+        
+

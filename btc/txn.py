@@ -336,6 +336,7 @@ class txn:
         # Last field is the locktime
         #
         self.locktime, vout_str = serialize.deserializeUint32(vout_str)
+        return vout_str
         
         
     #
@@ -354,18 +355,28 @@ class txn:
         
     #
     # Derive the transaction ID
+    # Note that a transaction ID is a hash which itself
+    # is stored as a uint256 in the bitcoin reference 
+    # implementation. As every number in this implementation,
+    # it is stored internally and serialized as a little endian
+    # but usually converted (for instance in the RPC server) to
+    # a big endian representation for the purpose of being 
+    # displayed. 
     #
-    def getTxnId(self):
+    def getTxnId(self, byteorder="big"):
         h = utils.hash256(bytes.fromhex(self.serialize()))
-        h = binascii.hexlify(h).decode('ascii')
+        s = binascii.hexlify(h).decode('ascii')
         #
-        # Reverse bytewise
+        # Reverse bytewise if big endian encoding
+        # is requested
         # 
-        s = ""
-        for i in range(32):
-            s = h[0:2] + s
-            h = h[2:]
-        return s
+        if byteorder == "big":
+            return serialize.serializeString(s, 32)
+        elif byteorder == "little":
+            return s
+        else:
+            raise ValueError("Invalid byte order")
+        
         
     #
     # Add an input

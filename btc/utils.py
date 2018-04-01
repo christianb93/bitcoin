@@ -202,7 +202,7 @@ def isValidDERSignature(s):
 #################################################
 #
 # Utility function to get a transaction in raw
-# format from bitcoin.info
+# format from blockchain.info
 #
 #################################################
 
@@ -210,6 +210,20 @@ def getRawTransaction(txid):
     url = 'https://blockchain.info/en/tx/' + txid + '?format=hex'
     r = requests.get(url)
     return r.text
+    
+    
+#################################################
+#
+# Utility function to get a block in raw
+# format from bitcoin.info
+#
+#################################################
+
+def getRawBlock(blockid):
+    url = 'https://blockchain.info/en/block/' + blockid + '?format=hex'
+    r = requests.get(url)
+    return r.text
+
 
 #################################################
 #

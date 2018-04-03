@@ -57,6 +57,12 @@ class blockHeader:
     def getPrevBlockId(self):
         return self.prevBlockId
         
+    #
+    # Get the Merkle root
+    # Be careful - this will give you
+    # the Merkle root hash in big endian
+    # format!
+    #
     def getMerkleRoot(self):
         return self.merkleRoot
         
@@ -66,8 +72,20 @@ class blockHeader:
     def getNonce(self):
         return self.nonce
         
+    #
+    # Return the bits as an integer
+    #
     def getBits(self):
         return self.bits
+        
+    #
+    # Get the difficulty as a float
+    #
+    def getDifficulty(self):
+        exponent = self.bits >> 24
+        coeff = (float) (self.bits & 0xFFFFFF)
+        return 256**(29 - exponent)*(65535.0 / coeff)
+
         
     #
     # Deserialize a block header from the raw representation

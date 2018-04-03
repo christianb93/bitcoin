@@ -113,4 +113,17 @@ def test_tc5():
     block = btc.block.block()
     block.deserialize(raw)
     assert(block.serialize() == raw)
-
+    
+#
+# Test conversion of bits to difficulty
+#
+def test_tc6():
+    #
+    # This is the raw block header of block #516463
+    #
+    raw = "00000020d0af8b47e9b5cdf1911642224e548bec3d54c2ba1c900300000000000000000079fd24794eccc05a7e198ce2613dfc0e89a65d20dc871440f2c8b6197deb237b0199c35ab72a5017ed3013f1bb"
+    blockHeader = btc.block.blockHeader()
+    blockHeader.deserialize(raw)
+    assert(abs(blockHeader.getDifficulty() - 3511060552899.72) < 0.01)
+    
+    

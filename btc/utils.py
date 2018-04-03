@@ -34,6 +34,7 @@
 
 import hashlib
 import requests
+import binascii
 
 BASE58_ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
 
@@ -260,4 +261,46 @@ def rpcCall(method, params = None, port=18332, host="localhost", user="user", pa
     else:
         raise ConnectionError("Request failed with HTTP status code ", r.status_code)
         
+
+#
+# Calculate the Merkle root given the leaves as a list. This
+# implementation is probably not the most efficient one,
+# but simple. Be careful - the list will be changed
+#
+def merkleRoot(leaves):
+    if 0 == len(leaves):
+        raise ValueError("Should not be called with an empty list")
+    #
+    # If there is only one leave, we are done
+    #
+    if 1 == len(leaves):
+        return leaves[0]
+    #
+    # If the number of leaves is odd, append the last element again
+    #
+    if 1 == (len(leaves) % 2):
+        leaves.append(leaves[-1])
+    n = []
+    for i in range(len(leaves) // 2):
+        x = leaves[2*i] + leaves[2*i+1]
+        x = bytes.fromhex(x)
+        h = hash256(x)
+        n.append(binascii.hexlify(h).decode('ascii'))
+    return merkleRoot(n)
+    
+    
+    
+    
+#
+# Get the Merkle root in little endian format for a given block
+#
+def blockMerkleRoot(block):
+    leaves = []
+    for tx in block.getTx():
+        leaves.append(tx.getTxnId(byteorder = "little"))
+    return merkleRoot(leaves)
+    
+    
+
+    
 

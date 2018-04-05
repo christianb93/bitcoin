@@ -127,3 +127,25 @@ def test_tc6():
     assert(abs(blockHeader.getDifficulty() - 3511060552899.72) < 0.01)
     
     
+#
+# Test updateMerkleRoot
+#
+def test_tc7():
+    raw = '000000208b04e3a08be31c35257492f18bfac10c5ead328b5a4012473ef20a903cd49850bd11c56cf26bf256e4cdd00cd21b68c37f3b71d9614e9630226f5fa09b4104c1d7a1bf5affff7f20020000000202000000010000000000000000000000000000000000000000000000000000000000000000ffffffff04016c0101ffffffff02a803062a01000000232102a2f9ed878030526366b30093c00e32934f3c04a884f2844af2883ee453f0228dac0000000000000000266a24aa21a9ede8d2abc7618be366fa6688272429dac8512666a1610a72c6a72527c4698ccafc000000000200000001a88649b2ec24cb6fa07011acb68749461d7c438e8b89ddbcea3f5bac89e3ad2b010000006b483045022100ca652e20c2a0ceae370a2c037d8bbce09498c883a7a98a541e8f9fcea294d8c902207a16331540cd8a892186926646f99220489de0a9a9713f870b1c6989cf22948c012103f9fa8e3fba8af74b6c8ba4bd530000df4cc62bf0a50aeff58b6462888f79a5cefeffffff0280d1f008000000001976a914625d8e5d40a1b797b47cb66eee958724a668d8d288acd87adfa9000000001976a914731a59d04408789756ae353eeba6eefc975bfe7688ac1f000000'
+    block = btc.block.block()
+    block.deserialize(raw)
+    #
+    # Get the Merkle root
+    #
+    merkleRoot = block.getBlockHeader().getMerkleRoot()
+    #
+    # Update - but overwrite first so that we really know
+    # that we do something
+    #
+    block.getBlockHeader().merkleRoot = "ff"
+    block.updateMerkleRoot()
+    #
+    # this should not change anything
+    #
+    assert(block.getBlockHeader().getMerkleRoot() == merkleRoot)
+    

@@ -255,3 +255,19 @@ def test_tc44():
     spentTxout = prevTransaction.getOutputs()[txin.getVout()]
     stringToHash = btc.script.serializeForSigning(spendingTransaction, 0, spentTxout.getScriptPubKey())
     assert(True == btc.script.verifySignature(spendingTransaction, 0, spentTxout))
+
+
+#
+# Test implicit pushes
+#
+def test_tc45():
+    scriptSig = btc.script.scriptSig()
+    scriptSig.pushData("05060708")
+    s = scriptSig.serialize()
+    assert(s == "0405060708")
+    #
+    # Push more
+    #
+    scriptSig.pushData("ff")
+    s = scriptSig.serialize()
+    assert(s == "040506070801ff")

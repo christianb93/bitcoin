@@ -132,6 +132,8 @@ class txin:
         for _ in range(32):
             if self.prevTxid[_] != '0':
                 return False
+        if self.vout != 0xFFFFFFFF:
+            return False
         return True
         
     #
@@ -141,7 +143,7 @@ class txin:
     #
     def serialize(self):
         if self.prevTxid == None:
-            return ""
+            raise ValueError("No previous transaction ID set")
         if len(self.prevTxid) != 64:
             raise ValueError("Invalid previous transaction id - wrong length")
         s = ""
@@ -165,7 +167,7 @@ class txin:
         elif self.scriptSigHex != None:
             scriptSigHex = self.scriptSigHex
         else:
-            raise ValueError("Do not have hex representation of the signature script")
+            scriptSigHex = self.scriptSig.serialize()
         s = s + serialize.serializeVarInt(int(len(scriptSigHex) / 2))
         s = s + scriptSigHex
         #
@@ -300,6 +302,14 @@ class txn:
 
     
     #
+    # Is this a coinbase transaction
+    #
+    def isCoinbase(self):
+        if 1 == len(self.inputs):
+            return self.inputs[0].isCoinbase()
+        return False
+    
+    #
     # Build the transaction from a string. See the function
     # SerializeTransaction in primitives/transaction.h
     #
@@ -317,6 +327,8 @@ class txn:
         #
         self.inputs =  []
         no_in, vin_str = serialize.deserializeVarInt(vin_str)
+        if no_in == 0:
+            raise ValueError("This looks like a segregated witness transaction - not supported!")
         for i in range(no_in):
             vin = txin()
             vin_str = vin.deserialize(vin_str)

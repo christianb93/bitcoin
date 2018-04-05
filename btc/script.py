@@ -63,6 +63,7 @@ class scriptSig:
         self.s = s
         self.pubKeyHex = pubKeyHex
         self.hashType = hashType
+        self.data = ""
         if scriptType == SCRIPTTYPE_P2PKH:
             if (pubKeyHex == None):
                 raise ValueError("Need to provide public key for this script type")
@@ -97,6 +98,18 @@ class scriptSig:
     def getHashType(self):
         return self.hashType
         
+    
+    #
+    # Append data (implicit push)
+    #
+    def pushData(self, s):
+        l = len(s)
+        if l >=OP_PUSHDATA1:
+            raise ValueError("Input too long, non-implicit pushes not supported")
+        if 1 == (l % 2):
+            raise ValueError("Input must have even length")
+        self.data += serialize.serializeChar(l // 2) + s
+    
     
     def deserialize(self, s):
         opcode, s = serialize.deserializeChar(s)
@@ -183,7 +196,10 @@ class scriptSig:
         
     def serialize(self):
         if (self.scriptType != SCRIPTTYPE_P2PK) and (self.scriptType != SCRIPTTYPE_P2PKH):
-            raise ValueError("Unsupported script type")
+            #
+            # Only return data has explicitly been pushed
+            #
+            return self.data
         scriptSig = ""
         #
         # First opcode is the length - so we do this

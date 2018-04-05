@@ -50,10 +50,16 @@ class blockHeader:
         self.bits = bits
         self.nonce = nonce
         
-    
+    #
+    # Get the version as integer
+    #
     def getVersion(self):
         return self.version
         
+    #
+    # Get the hash of the previous block
+    # (in big endian encoding)
+    #
     def getPrevBlockId(self):
         return self.prevBlockId
         
@@ -66,9 +72,16 @@ class blockHeader:
     def getMerkleRoot(self):
         return self.merkleRoot
         
+    #
+    # Get the creation time of the block as
+    # integer (seconds since the epoch)
+    #
     def getCreationTime(self):
         return self.creationTime
         
+    #
+    # The nonce as integer
+    #
     def getNonce(self):
         return self.nonce
         
@@ -127,6 +140,22 @@ class blockHeader:
         s += serialize.serializeUint32(self.nonce)
         return s
         
+    #
+    # Derive the block hash
+    #
+    def getBlockHash(self, byteorder="big"):
+        h = utils.hash256(bytes.fromhex(self.serialize()))
+        s = binascii.hexlify(h).decode('ascii')
+        #
+        # Reverse bytewise if big endian encoding
+        # is requested
+        # 
+        if byteorder == "big":
+            return serialize.serializeString(s, 32)
+        elif byteorder == "little":
+            return s
+        else:
+            raise ValueError("Invalid byte order")
 
 #
 # A bitcoin block
@@ -135,9 +164,9 @@ class blockHeader:
 #
 class block:
         
-    def __init__(self,blockHeader = None, tx = None):
+    def __init__(self,blockHeader = None):
         self.blockHeader = blockHeader
-        self.tx = tx
+        self.tx = []
         
         
     def getBlockHeader(self):
@@ -186,10 +215,30 @@ class block:
         #
         s += serialize.serializeVarInt(len(self.tx))
         #
-        # Serialize the individual blocks
+        # Serialize the individual transactions
         #
         for _tx in self.tx:
             s += _tx.serialize()
         return s    
         
+    #
+    # Calculate the Merkle root and updated
+    # the block header
+    #
+    def updateMerkleRoot(self):
+        #
+        # This will return the Merkle root as little
+        # endian so we need to convert it
+        #
+        merkleRoot = utils.blockMerkleRoot(self)
+        self.blockHeader.merkleRoot = serialize.serializeString(merkleRoot, 32)
+        
+    
+    #
+    # Add a transaction to the block. Note that this will
+    # NOT update the Merkle root, you will have to call
+    # updateMerkleRoot explicitly
+    #
+    def addTxn(self, txn):
+        self.tx.append(txn)
 

@@ -256,10 +256,15 @@ def rpcCall(method, params = None, port=18332, host="localhost", user="user", pa
     json = r.json()
     if 'result' in json and json['result'] != None:
         return json['result']
-    elif 'error' in json:
+    elif 'error' in json and json['error'] != None:
         raise ConnectionError("Request failed with RPC error", json['error'])
-    else:
+    if r.status_code != 200:
         raise ConnectionError("Request failed with HTTP status code ", r.status_code)
+    #
+    # Might be perfectly valid to get here as some calls like submitblock do
+    # not return anything
+    #
+    return
         
 
 #

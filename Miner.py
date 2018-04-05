@@ -153,7 +153,7 @@ for _ in range(args.blocks):
     coefficient = (float)(bits & 0xFFFFFF)
     size = bits >> 24
     target = int(coefficient * 2**(8*(size - 3)))
-    print("Block ",_, "took ", attempts, "attempts, target is now ", "{0:0{1}x}".format(target, 64), "i.e. difficulty", _block.getBlockHeader().getDifficulty())
+    print("Block ",_, " with ", len(_block.getTx()), "transactions took ", attempts, "attempts, target is now ", "{0:0{1}x}".format(target, 64), "i.e. difficulty is", _block.getBlockHeader().getDifficulty())
 
 newHeight, currentLastBlockHash = getCurrentHeightLast()
 print("Done, new height is", newHeight)

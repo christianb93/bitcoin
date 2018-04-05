@@ -31,10 +31,18 @@
 #
 ####################################################
 
-import btc.mining
-import btc.utils
+
+# import matplotlib
+# matplotlib.use('TkAgg')
+import numpy as np
+import matplotlib.pyplot as plt
 import argparse
 import time
+
+import btc.mining
+import btc.utils
+
+
 
 #
 # Build a preliminary block, using data retrieved via
@@ -79,7 +87,9 @@ def getCurrentHeightLast():
     
 
 #
-# The actual mining loop
+# The actual mining loop. We increment the nonce
+# in a loop and calculate the block hash until
+# it passes the PoW test
 #
 def doWork(block, bits):
     success = False
@@ -106,6 +116,14 @@ def get_args():
                     default=1,
                     type=int,
                     help="Number of blocks to mine")
+    parser.add_argument("--plot",
+                    default=0,
+                    type=int,
+                    help="Plot development of difficulty and attempts over time")
+    parser.add_argument("--save",
+                    default=0,
+                    type=int,
+                    help="Save plots")
     args=parser.parse_args()
     return args
 
@@ -128,9 +146,15 @@ args = get_args()
 height, _ = getCurrentHeightLast()
 print("Current height is :", height)
 
+#
+# Logs
+#
+tries = []
+diff = []
+bl = []
 
 #
-# Mine 
+# Now we do the actual mining
 #
 for _ in range(args.blocks):
     #
@@ -153,7 +177,33 @@ for _ in range(args.blocks):
     coefficient = (float)(bits & 0xFFFFFF)
     size = bits >> 24
     target = int(coefficient * 2**(8*(size - 3)))
-    print("Block ",_, " with ", len(_block.getTx()), "transactions took ", attempts, "attempts, target is now ", "{0:0{1}x}".format(target, 64), "i.e. difficulty is", _block.getBlockHeader().getDifficulty())
+    difficulty = _block.getBlockHeader().getDifficulty()
+    print("Block ",_, " with ", len(_block.getTx()), "transactions took ", attempts, "attempts, target is now ", "{0:0{1}x}".format(target, 64), "i.e. difficulty is", difficulty)
+    #
+    # Append current difficulty, attempts and block number
+    # to logs
+    #
+    diff.append(difficulty)
+    tries.append(attempts)
+    bl.append(height + _)
 
 newHeight, currentLastBlockHash = getCurrentHeightLast()
 print("Done, new height is", newHeight)
+
+#
+# Now plot results if requested
+#
+if 1 == args.plot:
+    print("Plotting results")
+    fig = plt.figure(figsize=(10,8))
+    ax = fig.add_subplot(2,1,1)
+    ax.plot(bl, diff)
+    ax.set_title("Difficulty")
+    ax = fig.add_subplot(2,1,2)
+    ax.plot(bl, tries)
+    ax.set_title("Attempts")
+    if 1 == args.save:
+        plt.savefig("/tmp/mining.png")
+    plt.show()
+
+    

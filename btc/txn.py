@@ -129,9 +129,8 @@ class txin:
     # Is this a coinbase transaction?
     #
     def isCoinbase(self):
-        for _ in range(32):
-            if self.prevTxid[_] != '0':
-                return False
+        if self.prevTxid != "00"*32:
+            return False
         if self.vout != 0xFFFFFFFF:
             return False
         return True

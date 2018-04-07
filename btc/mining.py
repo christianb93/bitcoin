@@ -43,6 +43,9 @@ import time
 
 #
 # Check whether a given block has a valid PoW
+# Arguments:
+# - the block 
+# - the global target
 #
 def checkPoW(block, bits):
     #
@@ -72,7 +75,7 @@ def checkPoW(block, bits):
 # Check a given block. Parameters:
 # - bits - current target in compact encoding (as an integer)
 # - currentLastBlock - hash of current last block (as returned by the RPC call
-#   getblockchaininfo, i.e. in big endian 
+#   getblockchaininfo, i.e. in big endian)
 # This will NOT check the PoW!
 #
 def checkBlock(block, currentLastBlock):

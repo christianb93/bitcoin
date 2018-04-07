@@ -72,7 +72,8 @@ def buildBlock(address):
                                   currentHeight = template['height'] - 1,
                                   coinbasevalue = template['coinbasevalue'],
                                   bits = bits,
-                                  tx = txns)
+                                  tx = txns,
+                                  mintime = template['mintime'])
     return _block, bits
 
 

@@ -161,11 +161,12 @@ def createCoinbaseTxn(address, currentHeight, coinbasevalue, extraNonce = 1):
 # - bits in compact encoding
 # - tx - a list of transactions to become part of the block, not including
 #        the coinbase transaction
-def createNewBlock(address, currentLastBlockHash, currentHeight, coinbasevalue, bits, tx):
+# - mintime - the minimum time to use for the block as provided by getblocktemplate
+def createNewBlock(address, currentLastBlockHash, currentHeight, coinbasevalue, bits, tx, mintime):
     #
     # First we build a block header
     #
-    blockHeader = block.blockHeader(creationTime = int(time.time()),
+    blockHeader = block.blockHeader(creationTime = mintime,
                                     prevBlockId = currentLastBlockHash,
                                     nonce = 1,
                                     bits = bits)

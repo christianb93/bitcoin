@@ -1,6 +1,9 @@
 import btc.block
 import btc.mining
 
+import time
+
+
 #
 # Compare two strings and return the first charqcte where they
 # differ or minus 1
@@ -83,7 +86,8 @@ def test_tc4():
                                     currentLastBlockHash = "40fd433db35e43c9997e702fb0f11bbe171712675651e03461fabb98fbc29598", 
                                     currentHeight = 109, 
                                     coinbasevalue = 50*10**8, 
-                                    bits = int("207fffff",16), tx = [])
+                                    bits = int("207fffff",16), tx = [],
+                                    mintime = int(time.time()))
     #
     # Verify that it has exactly one transaction and that this
     # is a coinbase transaction

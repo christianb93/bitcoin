@@ -1,24 +1,24 @@
 FROM alpine:3.7 as build
 
 #
-# First get all the packages for 
+# First get all the packages for
 # the compile
 #
-RUN apk update && apk add git \ 
+RUN apk update && apk add git \
                           make \
                           file \
                           autoconf \
-                          automake \ 
+                          automake \
                           build-base \
                           libtool \
                           db-c++ \
                           db-dev \
                           boost-system \
                           boost-program_options \
-                          boost-filesystem \ 
-                          boost-dev \ 
-                          libressl-dev \ 
-                          libevent-dev 
+                          boost-filesystem \
+                          boost-dev \
+                          libressl-dev \
+                          libevent-dev
 
 #
 # Pull source code
@@ -31,7 +31,7 @@ RUN git clone https://github.com/bitcoin/bitcoin --branch v0.15.0 --single-branc
 RUN (cd bitcoin  && ./autogen.sh && \
                       ./configure --disable-tests \
                       --disable-bench --disable-static  \
-                      --without-gui --disable-zmq \ 
+                      --without-gui --disable-zmq \
                       --with-incompatible-bdb \
                       CFLAGS='-w' CXXFLAGS='-w' && \
                       make -j 4 && \
@@ -55,7 +55,7 @@ COPY --from=build /usr/local/bin/bitcoin-cli /usr/local/bin
 RUN apk update && apk add boost boost-filesystem \
             boost-program_options \
             boost-system boost-thread busybox db-c++ \
-            libevent libgcc libressl2.6-libcrypto \ 
+            libevent libgcc libressl2.6-libcrypto \
             libstdc++ musl
 
 #
@@ -65,6 +65,13 @@ RUN apk update && apk add boost boost-filesystem \
 COPY bitcoin.conf /bitcoin.conf
 
 #
+# Copy the startup script from
+# the build context into the container
+#
+COPY startup.sh /startup.sh
+
+
+#
 # Expose the port for the RPC interface
 #
 EXPOSE 18332/tcp
@@ -72,9 +79,4 @@ EXPOSE 18332/tcp
 #
 # Start the bitcoin server
 #
-ENTRYPOINT ["/usr/local/bin/bitcoind"]
-CMD ["-conf=/bitcoin.conf", "-regtest", "-rest=1", "-server=1", "-printtoconsole", "-txindex=1"]
-
-
-
-
+ENTRYPOINT ["/startup.sh"]
